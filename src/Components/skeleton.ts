@@ -6,6 +6,76 @@ export interface ISkeletonComponent {
   data: SkeletonType;
 }
 export type SkeletonType = {
+  animationSequence: any;
+  children: SkeletonLayer[];
+};
+
+export type SkeletonLayer = {
+  name: string;
+  src: string;
+  offset: Vector;
+  size: Vector;
+  angle: number;
+  children: SkeletonLayer[];
+};
+
+// this is the exported interface that is used in systems modules
+export interface SkeletonComponent {
+  skeletonSprite: SkeletonType;
+}
+
+export class SkeletonComp extends Component {
+  SkeletonComp = SkeletonComp;
+  children: SkeletonType[] = [];
+  // UI template string literal with UI binding of value property
+  public static template = `
+  <style>
+    .skeleton-sprite {
+      display: block;
+      position:absolute;
+      top:0;
+      left:0;
+      background-size: cover;
+      background-repeat: norepeat; 
+    }
+  </style>
+  <skeleton-sprite class="skeleton-sprite" >
+    <skeleton-relative style="position: relative; width:100%; height:100%">
+        <skeleton-component \${layer<=*value.children} style="display: block; width: \${layer.size.x}px; height: \${layer.size.y}px; transform: translate(\${layer.offset.x}px,\${layer.offset.y}px) rotate(\${layer.angle}deg); background-image: url(\${layer.src});">
+              < \${ SkeletonComp === child} \${ child <=* layer.children }
+        </skeleton-component>
+    </skeleton-relative>
+  </skeleton-sprite>
+    `;
+
+  //setting default value
+  public value: SkeletonType = {
+    animationSequence: {},
+    children: [],
+  };
+  public constructor() {
+    //@ts-ignore
+    super("skeletonSprite", SkeletonComp, true);
+  }
+
+  public define(data: ISkeletonComponent): void {
+    if (data == null) {
+      return;
+    }
+
+    this.value = data.data;
+  }
+}
+
+/*
+import { Vector } from "../../_SqueletoECS/Vector";
+import { Component } from "../../_SqueletoECS/component";
+
+// you can define the incoming types when the component is created
+export interface ISkeletonComponent {
+  data: SkeletonType;
+}
+export type SkeletonType = {
   src: string;
   offset: Vector;
   size: Vector;
@@ -21,7 +91,7 @@ export interface SkeletonComponent {
 export class SkeletonComp extends Component {
   children: SkeletonType[] = [];
   // UI template string literal with UI binding of value property
-  public template = `
+  public static template = `
     <style>
       .skeleton-sprite {
         display: block;
@@ -61,3 +131,86 @@ export class SkeletonComp extends Component {
     this.value = data.data;
   }
 }
+
+
+*/
+
+/* try # 2
+
+import { Vector } from "../../_SqueletoECS/Vector";
+import { Component } from "../../_SqueletoECS/component";
+
+// you can define the incoming types when the component is created
+export interface ISkeletonComponent {
+  data: SkeletonType;
+}
+export type SkeletonType = {
+  animationSequence: any;
+  children: SkeletonLayer[];
+};
+
+export type SkeletonLayer = {
+  name: string;
+  src: string;
+  offset: Vector;
+  size: Vector;
+  angle: number;
+};
+
+// this is the exported interface that is used in systems modules
+export interface SkeletonComponent {
+  skeletonSprite: SkeletonType;
+}
+
+export class SkeletonComp extends Component {
+  children: SkeletonType[] = [];
+  // UI template string literal with UI binding of value property
+  public template = `
+    <style>
+      .skeleton-sprite {
+        display: block;
+        
+      }
+      .skeleton-rel{
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display:block; 
+      }
+      .skeleton-layer{
+        position:absolute;
+        top:0;
+        left:0;
+        background-size: contain;
+        background-repeat: no-repeat; 
+        transition: all 0.25s;
+      }
+    </style>
+    <skeleton-sprite class="skeleton-sprite">
+        <skeleton-rel class="skeleton-rel">
+          <skeleton-layer class="skeleton-layer" \${layer<=*value.children}  style="width: \${layer.size.x}px; height: \${layer.size.y}px; z-index: \${layer.z}; transform: translate(\${layer.offset.x}px,\${layer.offset.y}px) rotate(\${layer.angle}deg); background-image: url(\${layer.src});"></skeleton-relative>
+        </skeleton-rel>
+    </skeleton-sprite>
+    `;
+
+  //setting default value
+  public value: SkeletonType = {
+    animationSequence: {},
+    children: [],
+  };
+  public constructor() {
+    //@ts-ignore
+    super("skeletonSprite", SkeletonComp, true);
+  }
+
+  public define(data: ISkeletonComponent): void {
+    if (data == null) {
+      return;
+    }
+    console.log("here");
+
+    this.value = data.data;
+  }
+}
+
+*/

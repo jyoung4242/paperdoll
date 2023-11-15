@@ -8,6 +8,7 @@ import { Assets } from "@peasy-lib/peasy-assets";
 // Entities
 import { TemplateEntity } from "../Entities/entityTemplate";
 import { UI } from "@peasy-lib/peasy-ui";
+import { SkeletonAnimationSystem } from "../Systems/skeletonAnimation";
 
 export class Test extends Scene {
   name: string = "test";
@@ -25,7 +26,17 @@ export class Test extends Scene {
     console.log("here");
 
     Assets.initialize({ src: "./src/Assets/" });
-    await Assets.load(["1_head.png", "1_body.png"]);
+    await Assets.load([
+      "1_head.png",
+      "1_body.png",
+      "1_arm left.png",
+      "1_arm right.png",
+      "1_hand left.png",
+      "1_hand right.png",
+      "1_fingers left.png",
+      "1_leg left.png",
+      "1_leg right.png",
+    ]);
 
     let layers = SceneManager.viewport.layers;
     const game = layers.find(lyr => lyr.name == "game");
@@ -35,7 +46,7 @@ export class Test extends Scene {
     if (hud) UI.create(hud.element, new HUD(), HUD.template);
 
     this.entities.push(TemplateEntity.create());
-    this.sceneSystems.push();
+    this.sceneSystems.push(new SkeletonAnimationSystem());
     console.log(this.entities);
 
     //Start GameLoop
