@@ -58,6 +58,18 @@ export class SkeletonComp extends Component {
     super("skeletonSprite", SkeletonComp, true);
   }
 
+  public get template() {
+    return SkeletonComp.template;
+  }
+
+  public static create(data) {
+    console.log('CREATE', data);
+
+    const created = new this();
+    created.define(data);
+    return created;
+  }
+
   public define(data: ISkeletonComponent): void {
     if (data == null) {
       return;
