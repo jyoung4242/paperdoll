@@ -28,6 +28,9 @@ export class SkeletonComp extends Component {
   SkeletonComp = SkeletonComp;
   children: SkeletonType[] = [];
   // UI template string literal with UI binding of value property
+  public get template() {
+    return SkeletonComp.template;
+  }
   public static template = `
   <style>
     .skeleton-sprite {
