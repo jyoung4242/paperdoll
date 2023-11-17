@@ -1,8 +1,8 @@
 import { Entity } from "../../_SqueletoECS/entity";
 import { System } from "../../_SqueletoECS/system";
-import { SkeletonComponent } from "../Components/skeleton";
+import { SkeletonContainerComponent } from "../Components/skeletonContainer";
 
-export type SkeletonEntity = Entity & SkeletonComponent;
+export type SkeletonEntity = Entity & SkeletonContainerComponent;
 
 export class SkeletonAnimationSystem extends System {
   public constructor() {
@@ -10,7 +10,7 @@ export class SkeletonAnimationSystem extends System {
   }
 
   public processEntity(entity: SkeletonEntity): boolean {
-    return entity.skeletonSprite != null;
+    return entity.skeletonContainer != null;
   }
 
   public update(deltaTime: number, now: number, entities: SkeletonEntity[]): void {
@@ -19,54 +19,80 @@ export class SkeletonAnimationSystem extends System {
         return;
       }
 
-      if (!entity.skeletonSprite.animationSequence.enabled) return;
-      //create easytoread object
-      let localObject = entity.skeletonSprite.animationSequence;
+      if (!entity.skeletonContainer.animationSequence.enabled) return;
 
       //increment timer tik, reset if limit hit
-      localObject.tik++;
-
-      if (localObject.tik >= localObject.tikDelay) {
-        localObject.tik = 0;
-        localObject.sequenceIndex++;
+      entity.skeletonContainer.animationSequence.tik++;
+      if (entity.skeletonContainer.animationSequence.tik >= entity.skeletonContainer.animationSequence.tikDelay) {
+        entity.skeletonContainer.animationSequence.tik = 0;
+        entity.skeletonContainer.animationSequence.sequenceIndex++;
       }
 
       //reset sequence index
-      if (localObject.sequenceIndex >= localObject.sequences[localObject.currentSequence].length) {
-        localObject.sequenceIndex = 0;
+      if (
+        entity.skeletonContainer.animationSequence.sequenceIndex >=
+        entity.skeletonContainer.animationSequence.sequences[entity.skeletonContainer.animationSequence.currentSequence].length
+      ) {
+        entity.skeletonContainer.animationSequence.sequenceIndex = 0;
+        if (!entity.skeletonContainer.animationSequence.sequences[entity.skeletonContainer.animationSequence.currentSequence].loop)
+          entity.skeletonContainer.animationSequence.enabled;
       }
 
-      let components = Object.entries(localObject.sequences[localObject.currentSequence].components);
+      let keyframeEntries;
+      //if there is keyframe data for this index, grab keyframe data
+      if (
+        entity.skeletonContainer.animationSequence.sequences[entity.skeletonContainer.animationSequence.currentSequence].keyframes[
+          entity.skeletonContainer.animationSequence.sequenceIndex
+        ]
+      )
+        keyframeEntries = Object.entries(
+          entity.skeletonContainer.animationSequence.sequences[entity.skeletonContainer.animationSequence.currentSequence].keyframes[
+            entity.skeletonContainer.animationSequence.sequenceIndex
+          ]
+        );
+      else return; //if no keyframe data for this index, bail
 
-      components.forEach(compEntry => {
-        const [compName, compParams] = compEntry;
-
-        //execute update to entity by compName and compParams (index)
-
-        //entity param to update
-        let component = entity.skeletonSprite.children.find(child => child.name == compName);
-        if (!component) return;
-
-        //property to update at sequence
-        if ((compParams as any[]).length == 0) return;
-
-        let props = Object.entries((compParams as any[])[localObject.sequenceIndex]);
-
-        props.forEach(prop => {
-          console.log(component, prop[0], prop[1]);
-
-          if (typeof prop[1] == "object") {
-            //@ts-ignore
-            Object.assign(component[prop[0]], prop[1]);
-          } else if (typeof prop[1] == "number") {
-            //@ts-ignore
-            component[prop[0]] = prop[1];
-          } else if (typeof prop[1] == "string") {
-            //@ts-ignore
-            component[prop[0]] = prop[1];
-          }
-        });
+      keyframeEntries.forEach(keyEntry => {
+        const [compName, compParams] = keyEntry;
+        //find compName, update each param
+        let targetdata = findParentByName(entity.skeletonContainer.components, compName);
+        //we have the target property, now loop through compParams and update each prop
+        //@ts-ignore
+        Object.entries(compParams).forEach(p => (targetdata[p[0]] = p[1]));
       });
     });
   }
+}
+
+function findParentByName(obj: any, targetName: string, path = []): any {
+  for (let index = 0; index < obj.length; index++) {
+    const element = obj[index];
+    let parent = element.data.parent;
+    let children = element.data.children;
+
+    //check parent first, then kids
+    if (parent.name == targetName) return parent;
+
+    if (children.length > 0) {
+      const child = checkChildren(children, targetName);
+      if (child) return child;
+    }
+  }
+
+  return null;
+}
+
+function checkChildren(obj: any, name: string): any {
+  for (let index = 0; index < obj.length; index++) {
+    const child = obj[index].data.children;
+    const parent = obj[index].data.parent;
+
+    if (parent.name == name) return parent;
+
+    if (child && child.length > 0) {
+      let rstl = checkChildren(child, name);
+      if (rstl) return rstl;
+    }
+  }
+  return null;
 }

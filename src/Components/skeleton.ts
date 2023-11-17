@@ -34,20 +34,18 @@ export class SkeletonComp extends Component {
   public static template = `
   <style>
     .skeleton-sprite {
-      display: block;
-      position:absolute;
+      position: absolute;
       top:0;
       left:0;
       background-size: cover;
-      background-repeat: norepeat; 
+      background-repeat: no-repeat; 
+      transform-style: preserve-3d;
+      transition: all 0.1s ;
     }
+        
   </style>
-  <skeleton-sprite class="skeleton-sprite" >
-    <skeleton-relative style="position: relative; width:100%; height:100%">
-        <skeleton-component \${layer<=*value.children} style="display: block; width: \${layer.size.x}px; height: \${layer.size.y}px; transform: translate(\${layer.offset.x}px,\${layer.offset.y}px) rotate(\${layer.angle}deg); background-image: url(\${layer.src});">
-              < \${ SkeletonComp === child} \${ child <=* layer.children }
-        </skeleton-component>
-    </skeleton-relative>
+  <skeleton-sprite class="skeleton-sprite" data-title="\${value.parent.name}" style="  display: block; width: \${value.parent.size.x}px; height: \${value.parent.size.y}px; transform: translate(\${value.parent.offset.x}px,\${value.parent.offset.y}px) translateZ(\${value.parent.z}px) rotate(\${value.parent.angle}deg);background-image: url(\${value.parent.src}); z-index: \${value.parent.z};">
+      < \${ SkeletonComp === child} \${ child <=* value.children }>
   </skeleton-sprite>
     `;
 
@@ -59,6 +57,12 @@ export class SkeletonComp extends Component {
   public constructor() {
     //@ts-ignore
     super("skeletonSprite", SkeletonComp, true);
+  }
+
+  public static create(data: ISkeletonComponent) {
+    const created = new this();
+    created.define(data);
+    return created;
   }
 
   public define(data: ISkeletonComponent): void {

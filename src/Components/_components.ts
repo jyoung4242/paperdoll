@@ -12,10 +12,19 @@ import { SizeComp } from "./sizeComponent";
 import { OpacityComp } from "./opacityComponent";
 import { SkeletonComp } from "./skeleton";
 import { RenderComp } from "./render";
+import { SkeletonContainerComp } from "./skeletonContainer";
 
 // The template component is demonstrated by default, you'll probably
 // want to replace it
 
 export function LoadComponents() {
-  [new Position(), new ZindexComp(), new SizeComp(), new OpacityComp(), new SkeletonComp(), new RenderComp()];
+  [
+    new Position(),
+    new ZindexComp(),
+    new SizeComp(),
+    new OpacityComp(),
+    new SkeletonComp(),
+    new SkeletonContainerComp(),
+    new RenderComp(),
+  ];
 }
