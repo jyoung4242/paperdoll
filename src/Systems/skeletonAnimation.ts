@@ -1,12 +1,20 @@
 import { Entity } from "../../_SqueletoECS/entity";
 import { System } from "../../_SqueletoECS/system";
 import { SkeletonContainerComponent } from "../Components/skeletonContainer";
+import { Signal } from "../../_SqueletoECS/Signals";
 
 export type SkeletonEntity = Entity & SkeletonContainerComponent;
 
 export class SkeletonAnimationSystem extends System {
+  pendingAnimationChange = "";
+  animationSignal = new Signal("changeAnimation");
   public constructor() {
     super("Skeleton");
+    this.animationSignal.listen((signalDetails: CustomEvent) => {
+      const nextAnimation = signalDetails.detail.params[0];
+      console.log(nextAnimation);
+      this.pendingAnimationChange = nextAnimation;
+    });
   }
 
   public processEntity(entity: SkeletonEntity): boolean {
@@ -19,11 +27,25 @@ export class SkeletonAnimationSystem extends System {
         return;
       }
 
+      //check if animation sequence changed
+      if (this.pendingAnimationChange != "") {
+        entity.skeletonContainer.animationSequence.currentSequence = this.pendingAnimationChange;
+        this.pendingAnimationChange = "";
+        entity.skeletonContainer.animationSequence.sequenceIndex = 0;
+        entity.skeletonContainer.animationSequence.enabled = true;
+      }
       if (!entity.skeletonContainer.animationSequence.enabled) return;
+      //if animation sequence is set to something not in defined, just bail
+      console.log();
+
+      if (!entity.skeletonContainer.animationSequence.sequences[entity.skeletonContainer.animationSequence.currentSequence]) return;
 
       //increment timer tik, reset if limit hit
       entity.skeletonContainer.animationSequence.tik++;
-      if (entity.skeletonContainer.animationSequence.tik >= entity.skeletonContainer.animationSequence.tikDelay) {
+      if (
+        entity.skeletonContainer.animationSequence.tik >=
+        entity.skeletonContainer.animationSequence.sequences[entity.skeletonContainer.animationSequence.currentSequence].tikDelay
+      ) {
         entity.skeletonContainer.animationSequence.tik = 0;
         entity.skeletonContainer.animationSequence.sequenceIndex++;
       }
@@ -35,7 +57,7 @@ export class SkeletonAnimationSystem extends System {
       ) {
         entity.skeletonContainer.animationSequence.sequenceIndex = 0;
         if (!entity.skeletonContainer.animationSequence.sequences[entity.skeletonContainer.animationSequence.currentSequence].loop)
-          entity.skeletonContainer.animationSequence.enabled;
+          entity.skeletonContainer.animationSequence.enabled = false;
       }
 
       let keyframeEntries;

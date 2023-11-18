@@ -36,6 +36,10 @@ export class Test extends Scene {
       "1_fingers left.png",
       "1_leg left.png",
       "1_leg right.png",
+      "1_quiver.png",
+      "1_bow1.png",
+      "1_bow2.png",
+      "arrow.png",
     ]);
 
     let layers = SceneManager.viewport.layers;
